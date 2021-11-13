@@ -1,1 +1,1 @@
-DB_FILENAME = "SubjectAkinator.db"
+DB_FILENAME = "db\\SubjectAkinator.db"

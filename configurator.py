@@ -2,12 +2,12 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QApplication, QWidget, QTableWidgetItem, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QShortcut
 
-from question_editor import QuestionEditorWindowWidget
-from subject_editor import SubjectEditorWindowWidget
-from functions import update_table
-from akinator_database_cursor import SubjectAkinatorDatabaseCursor, Subject, Question
+from sources.question_editor import QuestionEditorWindowWidget
+from sources.subject_editor import SubjectEditorWindowWidget
+from sources.functions import update_table
+from sources.akinator_database_cursor import SubjectAkinatorDatabaseCursor, Subject, Question
 from settings import DB_FILENAME
 
 

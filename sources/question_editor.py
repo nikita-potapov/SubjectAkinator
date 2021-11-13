@@ -1,10 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QTableWidgetItem, QShortcut
-from functions import update_table
+from sources.functions import update_table
 from PyQt5.QtCore import Qt
 
-from akinator_database_cursor import Question
+from sources.akinator_database_cursor import  Question
 
 
 class Ui_Form(object):

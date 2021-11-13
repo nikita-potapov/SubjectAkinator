@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget
 
-from akinator_database_cursor import Subject
+from sources.akinator_database_cursor import Subject
 
 
 class Ui_Form(object):
