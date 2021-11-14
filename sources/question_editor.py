@@ -36,31 +36,42 @@ class Ui_Form(object):
         self.question_text_edit = QtWidgets.QLineEdit(Form)
         self.question_text_edit.setObjectName("lineEdit")
         self.verticalLayout.addWidget(self.question_text_edit)
+
         self.line = QtWidgets.QFrame(Form)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.verticalLayout.addWidget(self.line)
+
         self.subject_search_phrase = QtWidgets.QLineEdit(Form)
         self.subject_search_phrase.setAlignment(QtCore.Qt.AlignCenter)
         self.subject_search_phrase.setObjectName("lineEdit_2")
         self.verticalLayout.addWidget(self.subject_search_phrase)
+
         self.table = QtWidgets.QTableWidget(Form)
         self.table.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.table.setObjectName("table")
         self.table.setColumnCount(0)
         self.table.setRowCount(0)
         self.table.verticalHeader().hide()
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.table.setTabKeyNavigation(False)
         self.verticalLayout.addWidget(self.table)
+
         self.verticalLayout_2.addLayout(self.verticalLayout)
+
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+
         self.btn_add_decline = QtWidgets.QPushButton(Form)
         self.btn_add_decline.setObjectName("btn_add_decline")
+
         self.horizontalLayout.addWidget(self.btn_add_decline)
+
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding,
                                            QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
+
         self.btn_add_accept = QtWidgets.QPushButton(Form)
         self.btn_add_accept.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.btn_add_accept.setObjectName("btn_add_accept")

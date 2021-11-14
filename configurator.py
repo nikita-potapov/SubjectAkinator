@@ -55,6 +55,8 @@ class Ui_Form(object):
         self.table.setColumnCount(0)
         self.table.setRowCount(0)
         self.table.verticalHeader().hide()
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.table.setTabKeyNavigation(False)
         self.verticalLayout.addWidget(self.table)
 
         self.retranslateUi(Form)
