@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QApplication, QWidget, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QShortcut, QMessageBox
 
 from sources.question_editor import QuestionEditorWindowWidget
 from sources.subject_editor import SubjectEditorWindowWidget
@@ -87,7 +87,6 @@ class MyApplication(QWidget, Ui_Form):
         self.table.doubleClicked.connect(self.table_item_double_clicked)
 
         self.my_cursor = SubjectAkinatorDatabaseCursor(DB_FILENAME)
-
         self.combo_box_changed()
 
         self.search_phrase_lineEdit.textChanged.connect(self.search_phrase_edited)
@@ -199,6 +198,9 @@ class MyApplication(QWidget, Ui_Form):
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         for child in self.childs:
             child.close()
+
+    def my_close(self):
+        self.close()
 
 
 if __name__ == '__main__':

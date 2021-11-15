@@ -1,2 +1,0 @@
-pyinstaller --onefile --noconsole sources\configurator.py
-pause

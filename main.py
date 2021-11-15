@@ -1,12 +1,10 @@
 import sys
 from pprint import pprint
-
-from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget
-
+from sources.akinator_database_cursor import SubjectAkinatorDatabaseCursor, Question
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-SUBJECTS_FILENAME = "subjects.csv"
+from settings import DB_FILENAME
 
 
 class Ui_Form_Start_Window(object):
@@ -70,33 +68,11 @@ class StartWindowWidget(QWidget, Ui_Form_Start_Window):
         self.child = None
         self.btn_start.clicked.connect(self.btn_start_clicked)
 
-        self.subjects = []
-        self.load_subjects()
-
     def btn_start_clicked(self):
         subject_name = self.lineEdit.text().strip()
-        result = self.check_subject_name(subject_name)
-        if not result:
-            return
-        self.child = QuestionsWindowWidget()
+        self.child = QuestionsWindowWidget(self)
         self.child.show()
         self.close()
-
-    def check_subject_name(self, subject_name):
-        if not subject_name:
-            self.error_text_line.setText(f'Ошибка! Введите название предмета')
-            return False
-        if subject_name not in self.subjects:
-            self.error_text_line.setText(f'Предмет \"{subject_name}\" не найден')
-            return False
-        return True
-
-    def load_subjects(self):
-        with open(SUBJECTS_FILENAME, encoding='UTF-8') as file:
-            data = file.read()
-        data = [x.split(';') for x in data.split('\n')]
-
-        print(len(data), len(data[0]))
 
 
 class Ui_Form_Questions_Window(object):
@@ -181,9 +157,130 @@ class Ui_Form_Questions_Window(object):
 
 
 class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
         self.setupUi(self)
+        self.parent = parent
+
+        self.game_is_over = False
+        self.predicted_subject = None
+
+        self.last_questions = []
+
+        self.db_cursor = SubjectAkinatorDatabaseCursor(DB_FILENAME)
+        self.current_subjects = [x[0] for x in self.db_cursor.get_all_subjects()]
+        self.current_question = self._get_question_with_max_profit()
+        self.questions_count = 1
+
+        # print(self.current_question)
+        # pprint(self.current_subjects)
+        print('[INFO] Loaded subjects:', len(self.current_subjects))
+
+        self.btn_answer_yes.clicked.connect(self.btn_answer_yes_clicked)
+        self.btn_answer_no.clicked.connect(self.btn_answer_no_clicked)
+
+        self.update_interface()
+
+    def btn_answer_yes_clicked(self):
+        print('-' * 40, '\n', "[INFO] get 'YES' answer")
+        if not self.game_is_over:
+            self.print_statistics()
+            self.current_subjects = list(
+                set(self.current_subjects) & set(self.current_question.subjects_ids))
+            self.set_new_question()
+        else:
+            self.question_label.setText("Спасибо за игру! Я отгадал :)")
+            self.btn_answer_no.hide()
+            self.btn_answer_yes.setText('Начать заново')
+            self.btn_answer_yes.clicked.connect(self.restart)
+
+    def btn_answer_no_clicked(self):
+        print('-' * 40, '\n', "[INFO] get 'NO' answer")
+        if not self.game_is_over:
+            self.print_statistics()
+            self.current_subjects = list(
+                set(self.current_subjects) - set(self.current_question.subjects_ids))
+            self.set_new_question()
+        else:
+            self.question_label.setText("Грустно...! Я не смог отгадать :(")
+            self.btn_answer_no.hide()
+            self.btn_answer_yes.setText('Начать заново')
+            self.btn_answer_yes.clicked.connect(self.restart)
+
+    def set_new_question(self):
+        self.last_questions.append(self.current_question.question_id)
+        self.last_questions = list(set(self.last_questions))
+
+        if self.check_predict():
+            self.game_is_over = True
+            self.predicted_subject = self.db_cursor.get_subject(self.current_subjects[0])
+
+        current_probably_answer_count = len(self.current_subjects)
+        print("Current probably subjects count:", current_probably_answer_count)
+
+        self.current_question = self._get_question_with_max_profit()
+        self.questions_count += 1
+        self.update_interface()
+
+    def update_interface(self):
+        if not self.game_is_over:
+            self.current_question: Question
+            self.question_label.setText(self.current_question.question_text)
+            self.question_number_label.setText(f"{self.questions_count}/10")
+        else:
+            self.question_label.setText(f"Это '{self.predicted_subject[1]}'?")
+
+    def _get_question_with_max_profit(self):
+        current_subjects_count = len(self.current_subjects)
+
+        res = self.db_cursor.get_question_with_max_separate(self.current_subjects,
+                                                            self.last_questions)
+
+        # pprint(res)
+
+        res = [(x[0], x[1],
+                len(set(self.current_subjects) - set(self.db_cursor.get_question(x[0])[0][2]))) for x
+               in res]
+        res = sorted(res, key=lambda x: (x[2] - current_subjects_count // 2) ** 2)
+        # pprint(res)
+
+        question = self.db_cursor.get_question(res[0][0])[0]
+        temp = Question()
+        temp.question_text = question[1]
+        temp.question_id = question[0]
+        temp.subjects_ids = question[2]
+        return temp
+
+    def print_statistics(self):
+        and_list = list(set(self.current_subjects) & set(self.current_question.subjects_ids))
+        sub_list = list(set(self.current_subjects) - set(self.current_question.subjects_ids))
+
+        print("question #", self.questions_count, "\n",
+              "state 'game_is_over':", self.game_is_over, "\n",
+              "last questions:", self.last_questions, "\n"
+                                                      "current subjects:",
+              len(self.current_subjects), self.current_subjects, "\n",
+              "question subjects:", len(self.current_question.subjects_ids),
+              self.current_question.subjects_ids, "\n",
+              "AND:", len(and_list), and_list, "\n",
+              "SUB:", len(sub_list), sub_list
+              )
+
+    def check_predict(self):
+        if len(self.current_subjects) == 1:
+            return True
+        elif len(self.current_subjects) == 2:
+            if self.db_cursor.get_subject(self.current_subjects[0])[1] == \
+                    self.db_cursor.get_subject(self.current_subjects[1])[1]:
+                return True
+        return False
+
+    def restart(self):
+        temp = QuestionsWindowWidget(self.parent)
+        temp.show()
+        self.parent.child = temp
+        self.hide()
+        del self
 
 
 if __name__ == '__main__':

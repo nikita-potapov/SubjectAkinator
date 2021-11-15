@@ -16,7 +16,7 @@ class Question:
     def __str__(self):
         return f"<Question> id:[{self.question_id}] " \
                f"text:\"{self.question_text}\" " \
-               f"ids:[{', '.join(self.subjects_ids)}]"
+               f"ids:[{', '.join([str(x) for x in self.subjects_ids])}]"
 
 
 class SubjectAkinatorDatabaseCursor:
@@ -24,8 +24,12 @@ class SubjectAkinatorDatabaseCursor:
         self.db_filename = db_filename
 
         self.db_connection = sqlite3.connect(db_filename)
-        if not self.db_connection:
-            AssertionError(f"database {db_filename} isn`t connected")
+        try:
+            self.db_connection.cursor()
+            self.is_exist = False
+        except Exception:
+            self.db_connection = None
+            self.is_exist = True
 
     def get_question(self, question_id):
         cursor = self.db_connection.cursor()
@@ -47,7 +51,6 @@ class SubjectAkinatorDatabaseCursor:
 
         for i in range(len(result)):
             result[i] = (*result[i], sub_result)
-
         return result
 
     def get_all_questions(self):
@@ -128,7 +131,7 @@ class SubjectAkinatorDatabaseCursor:
          way_of_study.name FROM subjects LEFT JOIN way_of_study 
          ON subjects.way_of_study = way_of_study.id WHERE subjects.id = {subject_id}"""
 
-        result = cursor.execute(query).fetchall()
+        result = cursor.execute(query).fetchone()
 
         if not result:
             return None
@@ -182,5 +185,24 @@ class SubjectAkinatorDatabaseCursor:
 
         if not result:
             return None
+
+        return result
+
+    def get_question_with_max_separate(self, current_subjects, last_questions):
+        query = f"""
+            SELECT *,
+       (
+           SELECT COUNT( * ) 
+             FROM question_to_subjects
+            WHERE question_to_subjects.question_id = questions.id AND 
+                  subject_id IN ({', '.join([str(x) for x in current_subjects])})
+        )
+        AS CUTOFF_COUNT
+        FROM questions
+        WHERE questions.id NOT IN ({', '.join([str(x) for x in last_questions])})
+        ORDER BY CUTOFF_COUNT DESC;
+        """
+        cursor = self.db_connection.cursor()
+        result = cursor.execute(query).fetchall()
 
         return result
