@@ -59,6 +59,9 @@ class Ui_Form(object):
         self.table.setTabKeyNavigation(False)
         self.verticalLayout.addWidget(self.table)
 
+        icon = QtGui.QIcon('resources\\akinator_configurator.ico')
+        Form.setWindowIcon(icon)
+
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 

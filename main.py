@@ -51,6 +51,9 @@ class Ui_Form_Start_Window(object):
                                             QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem3)
 
+        icon = QtGui.QIcon('resources\\akinator_clear.ico')
+        Form.setWindowIcon(icon)
+
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -69,10 +72,14 @@ class StartWindowWidget(QWidget, Ui_Form_Start_Window):
         self.btn_start.clicked.connect(self.btn_start_clicked)
 
     def btn_start_clicked(self):
-        subject_name = self.lineEdit.text().strip()
         self.child = QuestionsWindowWidget(self)
         self.child.show()
         self.close()
+
+    def restart(self):
+        self.child.close()
+        self.child = None
+        self.show()
 
 
 class Ui_Form_Questions_Window(object):
@@ -96,6 +103,7 @@ class Ui_Form_Questions_Window(object):
         font.setPointSize(16)
         self.question_label.setFont(font)
         self.question_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.question_label.setWordWrap(True)
         self.question_label.setObjectName("question_label")
         self.verticalLayout.addWidget(self.question_label)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
@@ -143,6 +151,9 @@ class Ui_Form_Questions_Window(object):
         self.question_number_label.setObjectName("question_number_label")
         self.horizontalLayout_2.addWidget(self.question_number_label)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+        icon = QtGui.QIcon('resources\\akinator_clear.ico')
+        Form.setWindowIcon(icon)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -276,11 +287,7 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
         return False
 
     def restart(self):
-        temp = QuestionsWindowWidget(self.parent)
-        temp.show()
-        self.parent.child = temp
-        self.hide()
-        del self
+        self.parent.restart()
 
 
 if __name__ == '__main__':
