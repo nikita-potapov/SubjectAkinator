@@ -175,6 +175,7 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
 
         self.game_is_over = False
         self.predicted_subject = None
+        self.subjects_list_is_empty = False
 
         self.last_questions = []
 
@@ -198,6 +199,7 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
             self.print_statistics()
             self.current_subjects = list(
                 set(self.current_subjects) & set(self.current_question.subjects_ids))
+            self.check_list()
             self.set_new_question()
         else:
             self.question_label.setText("Спасибо за игру! Я отгадал :)")
@@ -211,6 +213,7 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
             self.print_statistics()
             self.current_subjects = list(
                 set(self.current_subjects) - set(self.current_question.subjects_ids))
+            self.check_list()
             self.set_new_question()
         else:
             self.question_label.setText("Грустно...! Я не смог отгадать :(")
@@ -234,6 +237,9 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
         self.update_interface()
 
     def update_interface(self):
+        if self.subjects_list_is_empty:
+            self.empty_list_event()
+            return
         if not self.game_is_over:
             self.current_question: Question
             self.question_label.setText(self.current_question.question_text)
@@ -286,8 +292,16 @@ class QuestionsWindowWidget(QWidget, Ui_Form_Questions_Window):
                 return True
         return False
 
+    def check_list(self):
+        self.subjects_list_is_empty = not bool(self.current_subjects)
+
     def restart(self):
         self.parent.restart()
+
+    def empty_list_event(self):
+        self.question_label.setText("Увы, но я не знаю такого предмета.. Может сыграем еще разок?")
+        self.btn_answer_no.clicked.connect(self.close)
+        self.btn_answer_yes.clicked.connect(self.restart)
 
 
 if __name__ == '__main__':
