@@ -148,7 +148,7 @@ class MyApplication(QWidget, Ui_Form):
         item_selected_id = int(items_selected[0].text())
 
         if self.current_mode == 'Предметы':
-            subject = self.my_cursor.get_subject(item_selected_id)[0]
+            subject = self.my_cursor.get_subject(item_selected_id)
 
             subject_object = Subject()
             subject_object.subject_id = subject[0]
